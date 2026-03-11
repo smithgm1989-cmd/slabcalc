@@ -65,6 +65,100 @@ function buildCalcFromResults(results, graderName) {
   }
 }
 
+function AuthenticityPanel({ auth }) {
+  const [expanded, setExpanded] = useState(false)
+
+  const verdictMeta = {
+    'LIKELY GENUINE': { icon: '✅', cls: 'auth-genuine', bar: 'bar-genuine' },
+    'INCONCLUSIVE':   { icon: '⚠️', cls: 'auth-warn',    bar: 'bar-warn'    },
+    'LIKELY FAKE':    { icon: '🚨', cls: 'auth-fake',    bar: 'bar-fake'    },
+  }
+  const meta = verdictMeta[auth.verdict] || verdictMeta['INCONCLUSIVE']
+
+  return (
+    <div className={`auth-section ${meta.cls}`}>
+
+      {/* HEADER ROW */}
+      <div className="auth-header">
+        <div className="auth-verdict-block">
+          <span className="auth-icon">{meta.icon}</span>
+          <div>
+            <div className="auth-verdict-label">AUTHENTICITY CHECK</div>
+            <div className="auth-verdict">{auth.verdict}</div>
+          </div>
+        </div>
+        <div className="auth-confidence">
+          <span className="auth-conf-label">AI Confidence</span>
+          <span className="auth-conf-val">{auth.confidence}</span>
+        </div>
+      </div>
+
+      {/* SUMMARY */}
+      <div className="auth-summary">{auth.summary}</div>
+
+      {/* SIGNALS */}
+      {(auth.signals || []).length > 0 && (
+        <div className="auth-signals">
+          {auth.signals.map((s, i) => (
+            <div key={i} className={`auth-signal ${s.type === 'genuine' ? 'signal-ok' : 'signal-warn'}`}>
+              <span className="signal-icon">{s.type === 'genuine' ? '✓' : '!'}</span>
+              <div>
+                <div className="signal-label">{s.label}</div>
+                <div className="signal-detail">{s.detail}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* RED FLAGS */}
+      {(auth.redFlags || []).length > 0 && (
+        <div className="auth-redflags">
+          <div className="auth-redflags-title">🚩 Red Flags Detected</div>
+          {auth.redFlags.map((f, i) => (
+            <div key={i} className="auth-redflag-item">• {f}</div>
+          ))}
+        </div>
+      )}
+
+      {/* EXPANDABLE SECTION */}
+      <button className="auth-expand-btn" onClick={() => setExpanded(e => !e)}>
+        {expanded ? '▲ Hide' : '▼ Show'} how to verify this card yourself
+      </button>
+
+      {expanded && (
+        <div className="auth-expanded">
+          <div className="auth-checks-title">🔍 What to Check Physically</div>
+          <div className="auth-checks">
+            {(auth.whatToCheck || []).map((c, i) => (
+              <div key={i} className="auth-check-item">
+                <span className="auth-check-num">{i + 1}</span>
+                <span>{c}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="auth-resources-title">📚 Learn More & Get Expert Help</div>
+          <div className="auth-resources">
+            {(auth.resources || []).map((r, i) => (
+              <a key={i} href={r.url} target="_blank" rel="noopener noreferrer" className="auth-resource-link">
+                <span className="auth-resource-arrow">↗</span>
+                {r.label}
+              </a>
+            ))}
+          </div>
+
+          <div className="auth-disclaimer">
+            ⚠ AI authenticity checks are a starting point only — not a guarantee. For high-value cards,
+            always submit to a professional grading service (PSA, BGS, CGC) for official authentication.
+          </div>
+        </div>
+      )}
+
+    </div>
+  )
+}
+
 function FlipCalculator({ results }) {
   const [rawCost,     setRawCost]     = useState('')
   const [grader,      setGrader]      = useState('PSA')
@@ -547,6 +641,11 @@ function SlabCalc() {
                 <p>{results.bestGraderReason}</p>
               </div>
             </div>
+
+            {/* AUTHENTICITY */}
+            {results.authenticity && (
+              <AuthenticityPanel auth={results.authenticity} />
+            )}
 
           </div>
         )}

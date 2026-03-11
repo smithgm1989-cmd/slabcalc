@@ -84,10 +84,47 @@ When given card images, respond ONLY with a valid JSON object (no markdown, no b
     }
   ],
   "bestGrader": "PSA",
-  "bestGraderReason": "2 sentence explanation of why this grader offers the best ROI for this specific card, mentioning expected net profit after fees."
+  "bestGraderReason": "2 sentence explanation of why this grader offers the best ROI for this specific card, mentioning expected net profit after fees.",
+  "authenticity": {
+    "verdict": "LIKELY GENUINE",
+    "confidence": "High",
+    "riskLevel": "low",
+    "summary": "1-2 sentence plain-English verdict on whether this card appears genuine or suspicious.",
+    "signals": [
+      {
+        "type": "genuine",
+        "label": "Holofoil pattern",
+        "detail": "The sunburst holo pattern matches the expected Cosmos holo used in this set."
+      },
+      {
+        "type": "genuine",
+        "label": "Font rendering",
+        "detail": "HP and attack damage text appear crisp and correctly weighted."
+      },
+      {
+        "type": "warning",
+        "label": "Back color",
+        "detail": "Difficult to fully assess from this image — back blue should be a specific shade. Compare against a known genuine card."
+      }
+    ],
+    "redFlags": [],
+    "whatToCheck": [
+      "Hold the card at an angle under light — genuine holo foil produces a specific rainbow pattern unique to the set",
+      "Check the card thickness with a caliper — genuine Pokemon cards are 35pt (0.89mm)",
+      "The font on the card name should be Gill Sans — fakes often use a similar but slightly different typeface",
+      "Compare the blue on the card back against a known genuine card from the same era — fake backs are often too dark or too bright"
+    ],
+    "resources": [
+      { "label": "PSA Fake Card Guide", "url": "https://www.psacard.com/resources/articleview/id/379" },
+      { "label": "r/PokemonCardValue Authentication", "url": "https://www.reddit.com/r/PokemonCardValue/wiki/index" },
+      { "label": "Ludkins Authentication Guide", "url": "https://www.ludkins.com/blogs/news/how-to-spot-fake-pokemon-cards" },
+      { "label": "YouTube: Authenticated Charizard", "url": "https://www.youtube.com/results?search_query=how+to+spot+fake+pokemon+cards" }
+    ]
+  }
 }
 
-Use realistic current eBay sold-listing market prices. If you cannot identify the card clearly, provide your best estimate and note uncertainty in aiNotes.`
+Use realistic current eBay sold-listing market prices. If you cannot identify the card clearly, provide your best estimate and note uncertainty in aiNotes.
+For authenticity: verdict must be one of "LIKELY GENUINE", "INCONCLUSIVE", or "LIKELY FAKE". riskLevel must be "low", "medium", or "high". signals array should have 2-5 items with type of either "genuine" or "warning". redFlags should list specific visible fake indicators if any (empty array if none). whatToCheck should be 3-5 actionable physical checks the owner can do. resources should always include 3-4 real, working URLs for authentication help.`
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -139,7 +176,7 @@ export default async function handler(req, res) {
   try {
     const response = await client.messages.create({
       model: 'claude-opus-4-5',
-      max_tokens: 1500,
+      max_tokens: 2500,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content }],
     })
